@@ -4,6 +4,7 @@ export interface UserData {
   token: string;
   bio: string;
   avatar?: string;
+  deleted_at?: Date | null;
 }
 
 export interface UserRO {

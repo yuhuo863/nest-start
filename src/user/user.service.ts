@@ -15,7 +15,7 @@ import { UserPayload, UserRO } from './user.interface';
 @Injectable()
 export class UserService {
   constructor(
-    @Inject(USER_REPOSITORY)
+    @Inject(USER_REPOSITORY) // 注入UserRepository
     private userRepository: Repository<User>,
     private jwtService: JwtService,
   ) {}
@@ -61,6 +61,7 @@ export class UserService {
       ...createUserDto,
       bio: '', // 覆盖默认值
       avatar: '',
+      deleted_at: null,
     });
     await this.userRepository.save(user);
 
@@ -79,6 +80,7 @@ export class UserService {
         token,
         bio: user.bio,
         avatar: user.avatar,
+        deleted_at: null,
       },
     };
   }
@@ -157,14 +159,33 @@ export class UserService {
     };
   }
 
-  // 删除用户
+  // 删除用户(软删除）
   async remove(id: number): Promise<{ message: string }> {
     const user = await this.findOneWithPassword({ id });
     if (!user) {
       throw new NotFoundException(`用户ID ${id} 不存在`);
     }
-    await this.userRepository.remove(user);
+    await this.userRepository.softRemove(user); // 软删除（自动设置 deleted_at 为当前时间）
     return { message: `用户ID ${id} 已成功删除` };
+  }
+
+  // 恢复软删除
+  async recover(id: number): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      withDeleted: true, // 包含已删除的记录
+    });
+    if (!user) throw new NotFoundException(`用户ID ${id} 不存在`);
+    await this.userRepository.recover(user); // 恢复（deletedAt 设为 null）
+    return { message: `用户ID ${id} 已恢复` };
+  }
+
+  // 强制删除
+  async forceRemove(id: number): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException(`用户ID ${id} 不存在`);
+    await this.userRepository.remove(user); // 强制删除（物理删除）
+    return { message: `用户ID ${id} 已彻底删除` };
   }
 
   // 生成JWT令牌（封装成私有方法）

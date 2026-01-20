@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   BeforeInsert,
+  DeleteDateColumn,
   // JoinTable,
   // ManyToMany,
   // OneToMany,
@@ -43,6 +44,14 @@ export class User {
 
   @Column({ default: '' })
   avatar: string;
+
+  @DeleteDateColumn({
+    name: 'deleted_at', // 自定义数据库字段名（可选）
+    type: 'datetime',
+    nullable: true,
+    default: null,
+  })
+  deleted_at: Date | null;
 
   // 密码校验方法（供Service调用）
   async verifyPassword(plainPassword: string): Promise<boolean> {

@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './shared/filters/all-exceptions.filter';
 import { ValidationPipe } from './shared/pipes/validation.pipe';
+// import { NestExpressApplication } from '@nestjs/platform-express';
 // import * as crypto from 'crypto';
 
 async function bootstrap() {
@@ -10,10 +11,13 @@ async function bootstrap() {
   // const jwtSecret = crypto.randomBytes(32).toString('hex');
   // console.log(jwtSecret);
 
-  const appOptions = {
-    cors: true,
-  };
-  const app = await NestFactory.create(AppModule, appOptions);
+  const app = await NestFactory.create(AppModule, {
+    cors: true, // 开启跨域
+    abortOnError: false, // 异常时不终止进程, 直接抛出错误
+  });
+
+  // app.set('query parser', 'extended'); // Express 解析复杂查询字符串(可选)
+
   app.setGlobalPrefix('api'); // 全局接口前缀
 
   // 1. 注册全局异常过滤器（统一返回格式）

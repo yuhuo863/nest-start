@@ -1,11 +1,11 @@
 import {
-  PipeTransform,
-  Injectable,
   ArgumentMetadata,
   BadRequestException,
+  Injectable,
+  PipeTransform,
 } from '@nestjs/common';
 import { validate } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
@@ -15,8 +15,9 @@ export class ValidationPipe implements PipeTransform<any> {
       return value;
     }
 
-    // 将普通对象转为类实例（触发class-validator装饰器）
+    // 1. 转换为DTO实例
     const object = plainToInstance(metatype, value);
+    // 2. 校验
     const errors = await validate(object);
 
     // 校验失败则抛出结构化异常（供全局过滤器处理）
@@ -32,12 +33,12 @@ export class ValidationPipe implements PipeTransform<any> {
       });
     }
 
-    return value;
+    // 3. 过滤多余字段（仅保留DTO中定义的字段）
+    return instanceToPlain(object);
   }
 
   // 判断是否为类（排除基础类型）
   private isClass(metatype: Function): boolean {
-    // ⬇️ 修复：显式指定类型为 Function[]
     const types: Function[] = [String, Boolean, Number, Array, Object];
     return !types.includes(metatype);
   }
