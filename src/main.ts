@@ -2,21 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './shared/filters/all-exceptions.filter';
-import { ValidationPipe } from './shared/pipes/validation.pipe';
-// import { NestExpressApplication } from '@nestjs/platform-express';
-// import * as crypto from 'crypto';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  // 生成JWT密钥
-  // const jwtSecret = crypto.randomBytes(32).toString('hex');
-  // console.log(jwtSecret);
-
   const app = await NestFactory.create(AppModule, {
     cors: true, // 开启跨域
     abortOnError: false, // 异常时不终止进程, 直接抛出错误
   });
-
-  // app.set('query parser', 'extended'); // Express 解析复杂查询字符串(可选)
 
   app.setGlobalPrefix('api'); // 全局接口前缀
 

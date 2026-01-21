@@ -15,7 +15,7 @@ export const databaseProviders = [
         database: configService.get('DB_NAME'),
         entities: [__dirname + '/../**/*.entity{.ts,.js}'], // 实体文件路径
         synchronize: process.env.NODE_ENV !== 'production', // 生产环境关闭自动同步
-        logging: process.env.NODE_ENV !== 'production', // 生产环境关闭日志输出
+        // logging: process.env.NODE_ENV !== 'production', // 生产环境关闭日志输出
         timezone: '+08:00', // 设置时区为东八区
       });
       return dataSource.initialize();

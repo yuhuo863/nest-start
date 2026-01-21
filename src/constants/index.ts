@@ -1,2 +1,3 @@
 export const USER_REPOSITORY = 'USER_REPOSITORY';
 export const DATA_SOURCE = 'DATA_SOURCE';
+export const WINSTON_LOGGER = 'WINSTON_LOGGER';

@@ -7,16 +7,6 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
-// 统一返回格式的接口
-interface ApiErrorResponse {
-  statusCode: number;
-  message: string;
-  errors?: any;
-  timestamp: string;
-  path: string;
-}
-
-// 捕获所有异常（包括内置和自定义）
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
@@ -24,38 +14,55 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    // 1. 确定HTTP状态码
-    const statusCode =
+    // 1. 提取状态码
+    const status =
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    // 2. 构建错误信息
-    const message =
-      exception instanceof HttpException
-        ? (exception.getResponse() as any).message || exception.message
-        : '服务器内部错误';
-
-    // 3. 提取详细错误（如校验错误）
+    // 2. 提取错误详情
+    let message = 'Internal Server Error';
     let errors: any = null;
-    if (
-      exception instanceof HttpException &&
-      typeof exception.getResponse() === 'object' &&
-      (exception.getResponse() as any).errors
-    ) {
-      errors = (exception.getResponse() as any).errors;
+
+    if (exception instanceof HttpException) {
+      const res = exception.getResponse() as any;
+      // 适配官方 ValidationPipe 的 message 数组或自定义对象的 errors 字段
+      message = Array.isArray(res.message)
+        ? '参数校验失败'
+        : res.message || exception.message;
+      errors = Array.isArray(res.message) ? res.message : res.errors || null;
+    } else if (exception instanceof Error) {
+      message = exception.message;
     }
 
-    // 4. 统一返回格式
-    const errorResponse: ApiErrorResponse = {
-      statusCode,
-      message: Array.isArray(message) ? message[0] : message, // 兼容数组型错误信息
+    // 3. 构建元数据并记录日志（由 Winston 分发至 Console 和数据库）
+    // const logEntityData = {
+    //   level: 'error', // 对应 LogEntity.level，当前场景是异常，固定为 error
+    //   message: message, // 对应 LogEntity.message，异常核心描述
+    //   meta: {
+    //     // 对应 LogEntity.meta（JSON 类型），打包所有上下文信息
+    //     statusCode: status,
+    //     path: request.url,
+    //     method: request.method,
+    //     stack: exception instanceof Error ? exception.stack : null,
+    //   },
+    // };
+
+    // 仅在 500 以上错误或校验失败时记录
+    // if (status >= 400) {
+    //   this.logger.error(
+    //     `Exception at ${request.method} ${request.url}`,
+    //     logEntityData,
+    //   );
+    // }
+
+    // 4. 返回统一 JSON 格式
+    response.status(status).json({
+      statusCode: status,
+      message,
       errors,
       timestamp: new Date().toISOString(),
       path: request.url,
-    };
-
-    // 5. 设置响应头并返回JSON
-    response.status(statusCode).json(errorResponse);
+    });
   }
 }

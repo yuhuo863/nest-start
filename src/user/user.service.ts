@@ -4,6 +4,7 @@ import {
   NotFoundException,
   BadRequestException,
   UnauthorizedException,
+  // Logger,
 } from '@nestjs/common';
 import { Repository, FindOptionsWhere } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -11,17 +12,27 @@ import { User } from './user.entity';
 import { USER_REPOSITORY } from '../constants';
 import { CreateUserDto, LoginUserDto, UpdateUserDto } from './dto';
 import { UserPayload, UserRO } from './user.interface';
+import { WINSTON_MODULE_NEST_PROVIDER, WinstonLogger } from 'nest-winston';
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject(USER_REPOSITORY) // 注入UserRepository
     private userRepository: Repository<User>,
+
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) // 注入Logger服务
+    private readonly logger: WinstonLogger,
+
     private jwtService: JwtService,
-  ) {}
+  ) {
+    this.logger.setContext(UserService.name);
+  }
+
+  // private readonly logger = new Logger(UserService.name, { timestamp: true });
 
   // 查询所有用户
   async findAll(): Promise<User[]> {
+    this.logger.error('findAll failed', 'findAll user error', UserService.name);
     return this.userRepository.find({
       select: ['id', 'username', 'email', 'bio', 'avatar'], // 隐藏密码
     });

@@ -5,22 +5,19 @@ import {
   Delete,
   Param,
   Body,
-  UsePipes,
   UseGuards,
-  ParseIntPipe,
   Put,
   HttpCode,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto, LoginUserDto, UpdateUserDto } from './dto';
-import { ValidationPipe } from '../shared/pipes/validation.pipe';
 import { AuthGuard } from './guards/auth.guard';
 import { UserRO } from './user.interface';
 
 @ApiTags('users')
 @Controller('users')
-@UsePipes(new ValidationPipe()) // 应用参数校验管道
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
