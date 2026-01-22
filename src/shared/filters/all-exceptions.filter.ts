@@ -4,11 +4,19 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  Inject,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { WINSTON_MODULE_NEST_PROVIDER, WinstonLogger } from 'nest-winston';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: WinstonLogger,
+  ) {
+    this.logger.setContext(AllExceptionsFilter.name); // 可选：设置过滤器上下文
+  }
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -35,26 +43,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message = exception.message;
     }
 
-    // 3. 构建元数据并记录日志（由 Winston 分发至 Console 和数据库）
-    // const logEntityData = {
-    //   level: 'error', // 对应 LogEntity.level，当前场景是异常，固定为 error
-    //   message: message, // 对应 LogEntity.message，异常核心描述
-    //   meta: {
-    //     // 对应 LogEntity.meta（JSON 类型），打包所有上下文信息
-    //     statusCode: status,
-    //     path: request.url,
-    //     method: request.method,
-    //     stack: exception instanceof Error ? exception.stack : null,
-    //   },
-    // };
-
-    // 仅在 500 以上错误或校验失败时记录
-    // if (status >= 400) {
-    //   this.logger.error(
-    //     `Exception at ${request.method} ${request.url}`,
-    //     logEntityData,
-    //   );
-    // }
+    // 3. 日志记录(错误堆栈、请求信息等存入数据库）
+    this.logger.error(
+      `${request.method} ${request.url} - ${message}`, // 主消息
+      {
+        statusCode: status,
+        method: request.method,
+        path: request.url,
+        ip: request.ip,
+        userAgent: request.headers['user-agent'],
+        stack: exception instanceof Error ? exception.stack : null,
+        exception: exception instanceof Error ? exception.name : null,
+        errors,
+      } as any,
+    );
 
     // 4. 返回统一 JSON 格式
     response.status(status).json({

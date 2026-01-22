@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from './app/app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { AllExceptionsFilter } from './shared/filters/all-exceptions.filter';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
@@ -12,13 +11,10 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api'); // 全局接口前缀
 
-  // 1. 注册全局异常过滤器（统一返回格式）
-  app.useGlobalFilters(new AllExceptionsFilter());
-
-  // 2. 注册全局校验管道（统一参数校验）
+  // 注册全局校验管道（统一参数校验）
   app.useGlobalPipes(new ValidationPipe());
 
-  // 3. 配置Swagger文档
+  // 配置Swagger文档
   const config = new DocumentBuilder()
     .setTitle('NestJS 用户管理API')
     .setDescription('基于NestJS + TypeORM的用户管理系统')

@@ -6,17 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { UserPayload } from '../user.interface';
-
-// 扩展Express Request类型，挂载用户信息
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace Express {
-    interface Request {
-      user?: UserPayload;
-    }
-  }
-}
+import { UserPayload } from '../interfaces/user.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {

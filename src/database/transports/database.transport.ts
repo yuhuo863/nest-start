@@ -1,11 +1,16 @@
-import TransportStream from 'winston-transport';
+import TransportStream, { TransportStreamOptions } from 'winston-transport';
 import { Repository } from 'typeorm';
-import { LogEntity } from '../shared/logger/log.entity';
+import { LogEntity } from '../../shared/logger/entities/log.entity';
 
 export class DatabaseTransport extends TransportStream {
-  constructor(private logRepository: Repository<LogEntity>) {
+  constructor(
+    private logRepository: Repository<LogEntity>,
+    opts: TransportStreamOptions = {}, // ← 支持传入选项（如 level）
+  ) {
     super({
-      level: 'debug', // 默认级别，可以根据需要调整
+      // 级别顺序（从低到高）：debug < info < warn < error
+      level: 'debug', // 默认级别
+      ...opts,
     });
   }
 

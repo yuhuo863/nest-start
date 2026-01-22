@@ -8,10 +8,10 @@ import {
 } from '@nestjs/common';
 import { Repository, FindOptionsWhere } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { User } from './user.entity';
-import { USER_REPOSITORY } from '../constants';
+import { User } from './entities/user.entity';
+import { USER_REPOSITORY } from '../../config/constants';
 import { CreateUserDto, LoginUserDto, UpdateUserDto } from './dto';
-import { UserPayload, UserRO } from './user.interface';
+import { UserPayload, UserRO } from './interfaces/user.interface';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonLogger } from 'nest-winston';
 
 @Injectable()
@@ -32,7 +32,7 @@ export class UserService {
 
   // 查询所有用户
   async findAll(): Promise<User[]> {
-    this.logger.error('findAll failed', 'findAll user error', UserService.name);
+    // this.logger.warn('findAll() is called!', UserService.name);
     return this.userRepository.find({
       select: ['id', 'username', 'email', 'bio', 'avatar'], // 隐藏密码
     });
