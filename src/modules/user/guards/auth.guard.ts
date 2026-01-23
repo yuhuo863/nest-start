@@ -12,7 +12,7 @@ import { UserPayload } from '../interfaces/user.interface';
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     // 1. 获取请求对象
     const request = context.switchToHttp().getRequest<Request>();
 
@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
 
     try {
       // 3. 验证并解析token
-      const payload = await this.jwtService.verifyAsync<UserPayload>(token, {
+      const payload = this.jwtService.verify<UserPayload>(token, {
         secret: process.env.JWT_SECRET || 'your-strong-secret-key', // 生产环境用环境变量
       });
 

@@ -2,16 +2,17 @@ import { Module, Global } from '@nestjs/common';
 import { WinstonModule } from 'nest-winston';
 import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
-import { DATA_SOURCE } from '../../config/constants'; // 数据库 token
-import { DatabaseModule } from '../../database/database.module'; // 导入数据库模块
+import { DATA_SOURCE } from '../../config/constants';
+import { DatabaseModule } from '../../database/database.module';
 import { getWinstonConfig } from '../../config/logger.config';
 
-@Global() // 让模块全局可用，无需在每个模块重复导入
+@Global()
 @Module({
   imports: [
     WinstonModule.forRootAsync({
-      imports: [DatabaseModule], // 让 DATA_SOURCE 在此动态模块中可用
-      inject: [ConfigService, DATA_SOURCE], // ← 注入 ConfigService 和 DATA_SOURCE
+      imports: [DatabaseModule], // 导入数据库模块，确保能注入 DataSource
+      inject: [ConfigService, DATA_SOURCE], // 注入配置服务和数据库连接实例
+      // 生成 Winston 配置 (异步工厂模式)
       useFactory: async (
         configService: ConfigService,
         dataSource: DataSource,

@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Repository, FindOptionsWhere } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { User } from './entities/user.entity';
+import { UserEntity } from './entities/user.entity';
 import { USER_REPOSITORY } from '../../config/constants';
 import { CreateUserDto, LoginUserDto, UpdateUserDto } from './dto';
 import { UserPayload, UserRO } from './interfaces/user.interface';
@@ -17,21 +17,21 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonLogger } from 'nest-winston';
 @Injectable()
 export class UserService {
   constructor(
-    @Inject(USER_REPOSITORY) // 注入UserRepository
-    private userRepository: Repository<User>,
+    @Inject(USER_REPOSITORY) // 注入User的Repository服务（modules中提供程序中对应的provide值）
+    private readonly userRepository: Repository<UserEntity>,
 
     @Inject(WINSTON_MODULE_NEST_PROVIDER) // 注入Logger服务
     private readonly logger: WinstonLogger,
 
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
   ) {
-    this.logger.setContext(UserService.name);
+    this.logger.setContext(UserService.name); // 设置Logger的上下文(context)，便于区分日志来源
   }
 
   // private readonly logger = new Logger(UserService.name, { timestamp: true });
 
   // 查询所有用户
-  async findAll(): Promise<User[]> {
+  async findAll(): Promise<UserEntity[]> {
     // this.logger.warn('findAll() is called!', UserService.name);
     return this.userRepository.find({
       select: ['id', 'username', 'email', 'bio', 'avatar'], // 隐藏密码
@@ -39,7 +39,7 @@ export class UserService {
   }
 
   // 根据ID查询用户
-  async findOneById(id: number): Promise<User> {
+  async findOneById(id: number): Promise<UserEntity> {
     const user = await this.userRepository.findOne({
       where: { id },
       select: ['id', 'username', 'email', 'bio', 'avatar'],
@@ -52,13 +52,13 @@ export class UserService {
 
   // 内部方法：根据条件查询用户（含密码，供登录用）
   private async findOneWithPassword(
-    condition: FindOptionsWhere<User>,
-  ): Promise<User | null> {
+    condition: FindOptionsWhere<UserEntity>,
+  ): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: condition });
   }
 
   // 注册用户
-  async register(createUserDto: CreateUserDto): Promise<UserRO> {
+  async register(createUserDto: CreateUserDto): Promise<string> {
     // 1. 校验邮箱是否已存在
     const existingUser = await this.findOneWithPassword({
       email: createUserDto.email,
@@ -76,28 +76,11 @@ export class UserService {
     });
     await this.userRepository.save(user);
 
-    // 3. 生成JWT令牌
-    const token = await this.generateToken({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-    });
-
-    // 4. 返回用户信息（隐藏密码）
-    return {
-      user: {
-        username: user.username,
-        email: user.email,
-        token,
-        bio: user.bio,
-        avatar: user.avatar,
-        deleted_at: null,
-      },
-    };
+    return 'success!';
   }
 
   // 登录用户
-  async login(loginUserDto: LoginUserDto): Promise<UserRO> {
+  async login(loginUserDto: LoginUserDto): Promise<{ token: string }> {
     // 1. 查询用户（含密码）
     const user = await this.findOneWithPassword({ email: loginUserDto.email });
     if (!user) {
@@ -111,7 +94,7 @@ export class UserService {
     }
 
     // 3. 生成令牌
-    const token = await this.generateToken({
+    const token = this.generateToken({
       id: user.id,
       username: user.username,
       email: user.email,
@@ -119,13 +102,7 @@ export class UserService {
 
     // 4. 返回用户信息
     return {
-      user: {
-        username: user.username,
-        email: user.email,
-        token,
-        bio: user.bio,
-        avatar: user.avatar,
-      },
+      token,
     };
   }
 
@@ -152,7 +129,7 @@ export class UserService {
     await this.userRepository.save(user);
 
     // 4. 重新生成令牌（若更新了核心信息）
-    const token = await this.generateToken({
+    const token = this.generateToken({
       id: user.id,
       username: user.username,
       email: user.email,
@@ -200,8 +177,8 @@ export class UserService {
   }
 
   // 生成JWT令牌（封装成私有方法）
-  private async generateToken(payload: UserPayload): Promise<string> {
-    return this.jwtService.signAsync(payload, {
+  private generateToken(payload: UserPayload): string {
+    return this.jwtService.sign(payload, {
       expiresIn: '7d', // 令牌有效期7天
       secret: process.env.JWT_SECRET || 'your-strong-secret-key',
     });

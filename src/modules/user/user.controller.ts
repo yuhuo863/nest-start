@@ -35,14 +35,14 @@ export class UserController {
 
   // 注册用户（无需认证）
   @Post('register')
-  async register(@Body() createUserDto: CreateUserDto): Promise<UserRO> {
+  async register(@Body() createUserDto: CreateUserDto): Promise<string> {
     return this.userService.register(createUserDto);
   }
 
   // 登录用户（无需认证）
   @Post('login')
   @HttpCode(200) // 自定义状态码, POST请求默认201，此处改为200
-  async login(@Body() loginUserDto: LoginUserDto): Promise<UserRO> {
+  async login(@Body() loginUserDto: LoginUserDto): Promise<{ token: string }> {
     return this.userService.login(loginUserDto);
   }
 

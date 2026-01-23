@@ -15,7 +15,7 @@ import {
 } from '../../../shared/utils/password.util';
 
 @Entity('user')
-export class User {
+export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

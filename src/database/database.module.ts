@@ -1,10 +1,22 @@
 import { Global, Module } from '@nestjs/common';
-import { databaseProviders } from './database.providers';
 import { DATA_SOURCE } from '../config/constants';
+import { ConfigService } from '@nestjs/config';
+import { getDatabaseConfig } from '../config/database.config';
+import { DataSource } from 'typeorm';
 
-@Global() // 全局模块，在其他地方可以直接注入
+@Global()
 @Module({
-  providers: [...databaseProviders],
-  exports: [DATA_SOURCE], // 可以直接使用服务提供程序本身(...databaseProviders), 也可以只使用其令牌（provide值）
+  providers: [
+    {
+      provide: DATA_SOURCE, // 令牌，在其他地方可以直接注入这个服务提供程序
+      useFactory: async (configService: ConfigService) => {
+        const dataSourceOptions = getDatabaseConfig(configService);
+        const dataSource = new DataSource(dataSourceOptions);
+        return dataSource.initialize();
+      },
+      inject: [ConfigService],
+    },
+  ],
+  exports: [DATA_SOURCE], // 可以直接使用服务提供程序本身({...}), 也可以只使用其令牌（provide值）
 })
 export class DatabaseModule {}
