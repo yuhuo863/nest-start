@@ -19,7 +19,6 @@ export class UpdateUserDto {
   // 头像：可选 + 字符串（可选加URL格式校验）
   @IsOptional()
   @IsString({ message: '头像地址必须是字符串类型' })
-  // 如果需要校验头像是合法URL，可追加下面这行：
   @IsUrl({}, { message: '头像地址必须是合法的URL' })
   readonly avatar?: string;
 }

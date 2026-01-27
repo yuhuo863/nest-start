@@ -8,7 +8,6 @@ import {
   // ManyToMany,
   // OneToMany,
 } from 'typeorm';
-import { IsEmail } from 'class-validator';
 import {
   hashPassword,
   verifyPassword,
@@ -23,7 +22,6 @@ export class UserEntity {
   username: string;
 
   @Column({ unique: true })
-  @IsEmail()
   email: string;
 
   @Column()

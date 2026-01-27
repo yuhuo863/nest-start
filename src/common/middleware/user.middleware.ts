@@ -9,7 +9,7 @@ export class UserMiddleware implements NestMiddleware {
     private readonly logger: WinstonLogger,
   ) {}
   use(req: Request, res: Response, next: NextFunction) {
-    this.logger.log(`User Request: ${req.method} ${req.url}`);
+    this.logger.log(`User Middleware Handle: ${req.method} ${req.url}`);
     next();
   }
 }

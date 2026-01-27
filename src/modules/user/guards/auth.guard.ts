@@ -25,7 +25,7 @@ export class AuthGuard implements CanActivate {
     try {
       // 3. 验证并解析token
       const payload = this.jwtService.verify<UserPayload>(token, {
-        secret: process.env.JWT_SECRET || 'your-strong-secret-key', // 生产环境用环境变量
+        secret: process.env.JWT_SECRET || 'your-strong-secret-key',
       });
 
       // 4. 将用户信息挂载到request，供控制器/服务使用
