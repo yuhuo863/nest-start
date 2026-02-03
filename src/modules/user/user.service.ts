@@ -7,15 +7,15 @@ import {
 } from '@nestjs/common';
 import { Repository, FindOptionsWhere } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
-import { USER_REPOSITORY } from '../../config/constants';
 import { UpdateUserDto } from './dto';
 import { UserRO } from './interfaces/user.interface';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonLogger } from 'nest-winston';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject(USER_REPOSITORY) // 注入User的Repository服务（modules中提供程序中对应的provide值）
+    @InjectRepository(UserEntity) // 注入User的Repository服务（modules中提供程序中对应的provide值）
     private readonly userRepository: Repository<UserEntity>,
 
     @Inject(WINSTON_MODULE_NEST_PROVIDER) // 注入Logger服务

@@ -4,21 +4,35 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { USER_REPOSITORY } from '../../config/constants';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { UserEntity } from '../user/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { UserData, UserPayload } from '../user/interfaces/user.interface';
+import type { AuthModuleOptions } from './auth-module-options.interface';
+import { MODULE_OPTIONS_TOKEN } from './auth.module-definition';
+import path from 'path';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(USER_REPOSITORY) // 注入User的Repository服务（modules中提供程序中对应的provide值）
+    @InjectRepository(UserEntity) // 注入User的Repository服务（modules中提供程序中对应的provide值）
     private readonly userRepository: Repository<UserEntity>,
 
     private readonly jwtService: JwtService,
-  ) {}
+
+    @Inject(MODULE_OPTIONS_TOKEN)
+    private readonly options: AuthModuleOptions,
+  ) {
+    const filePath = `.env.${process.env.NODE_ENV || 'development'}`;
+    const envFile = path.resolve(__dirname, '../../', options.folder, filePath);
+
+    console.debug(
+      '旨在演示如何通过 ConfigurableModuleBuilder 简化手动创建高度可配置、动态的模块并暴露异步方法的过程。',
+    );
+    console.log(`[动态加载]环境变量文件【示例】：${envFile}`);
+  }
 
   private async findOneWithPassword(
     condition: FindOptionsWhere<UserEntity>,
