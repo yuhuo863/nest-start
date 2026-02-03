@@ -11,6 +11,8 @@ import {
   HttpStatus,
   UseInterceptors,
   ValidationPipe,
+  ClassSerializerInterceptor,
+  SerializeOptions,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto';
@@ -27,15 +29,18 @@ export class UserController {
   // 查询所有用户（需认证）
   @Get()
   findAll(
-    @User(new ValidationPipe({ validateCustomDecorators: true })) // 将管道应用于自定义参数装饰器
+    @User(new ValidationPipe({ validateCustomDecorators: true })) // 将管道应用于自定义参数装饰器 @User()
     user: UserPayload,
   ) {
     console.log('current valid user: ', user);
   }
 
   // 根据ID查询用户（需认证）
+  // 自定义拦截器，设置超时时间; 序列化拦截器，防止敏感信息泄露(如password等)
+  @UseInterceptors(TimeoutInterceptor, ClassSerializerInterceptor)
+  // 序列化选项，排除以 '_' 开头的属性和以 'deleted_' 开头的属性(如_someField和deleted_at)
+  @SerializeOptions({ excludePrefixes: ['_', 'deleted_'] })
   @Get(':id')
-  @UseInterceptors(TimeoutInterceptor) // 自定义拦截器，设置超时时间
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOneById(id);
   }

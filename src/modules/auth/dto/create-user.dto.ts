@@ -1,4 +1,11 @@
-import { IsEmail, IsNotEmpty, Length, Matches } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  IsUrl,
+  Length,
+  Matches,
+} from 'class-validator';
 
 /**
  * 创建用户的DTO（数据传输对象）
@@ -33,6 +40,13 @@ export class CreateUserDto {
     },
   )
   readonly password: string;
+
+  @IsString({ message: '简介必须是字符串类型' })
+  readonly bio?: string;
+
+  @IsString({ message: '头像地址必须是字符串类型' })
+  @IsUrl({}, { message: '头像地址必须是合法的URL' })
+  readonly avatar?: string;
   /**
    * deleted_at 是后端自动维护的软删除字段，禁止前端直接传入 / 修改，因此绝大多数场景下 DTO 中不需要定义该字段
    */

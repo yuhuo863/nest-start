@@ -15,7 +15,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(UserEntity) // 注入User的Repository服务（modules中提供程序中对应的provide值）
+    @InjectRepository(UserEntity) // 注入UserRepository服务
     private readonly userRepository: Repository<UserEntity>,
 
     @Inject(WINSTON_MODULE_NEST_PROVIDER) // 注入Logger服务
@@ -29,23 +29,18 @@ export class UserService {
   // 查询所有用户
   async findAll(): Promise<UserEntity[]> {
     // this.logger.warn('findAll() is called!', UserService.name);
-    return this.userRepository.find({
-      select: ['id', 'username', 'email', 'bio', 'avatar'], // 隐藏密码
-    });
+    return this.userRepository.find();
   }
 
   // 根据ID查询用户
   async findOneById(id: number): Promise<UserEntity> {
     // 延时5秒，模拟网络延迟
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-
-    const user = await this.userRepository.findOne({
-      where: { id },
-      select: ['id', 'username', 'email', 'bio', 'avatar'],
-    });
+    // await new Promise((resolve) => setTimeout(resolve, 5000));
+    const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException(`用户ID ${id} 不存在`);
     }
+    console.log('Method of UserEntity Exposed!', user._someField);
     return user;
   }
 
@@ -63,7 +58,6 @@ export class UserService {
     if (!user) {
       throw new NotFoundException(`用户ID ${id} 不存在`);
     }
-
     // 2. 若更新邮箱，校验新邮箱是否已被占用（排除自身）
     if (updateUserDto.email && updateUserDto.email !== user.email) {
       const existingUser = await this.findOneWithPassword({

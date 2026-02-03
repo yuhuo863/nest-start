@@ -20,6 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@keyv/redis": "^5.1.6",
+    "@nestjs/cache-manager": "^3.1.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -28,8 +30,10 @@
     "@nestjs/swagger": "^11.2.5",
     "@nestjs/typeorm": "^11.0.0",
     "argon2": "^0.44.0",
+    "cacheable": "^2.3.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
+    "keyv": "^5.6.0",
     "mysql2": "^3.16.1",
     "nest-winston": "^1.10.2",
     "reflect-metadata": "^0.2.2",
